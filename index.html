@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>中国式家庭 · 读书会伴读</title>
+<style>
+  :root{
+    --bg: #241f1b;
+    --bg-card: #2d2721;
+    --bg-card-2: #352e27;
+    --ink: #f2e9dc;
+    --ink-dim: #b6a893;
+    --ink-faint: #8a7c69;
+    --rust: #b15c46;
+    --rust-soft: #d4886f;
+    --rust-wash: rgba(177,92,70,0.14);
+    --jade: #8ca38c;
+    --jade-soft: #b3c4b0;
+    --jade-wash: rgba(140,163,140,0.14);
+    --line: rgba(242,233,220,0.10);
+    --serif: "Songti SC","Noto Serif SC","STSong",serif;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    overscroll-behavior-y:none;
+  }
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- top bar ---------- */
+  header.top{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, var(--bg) 78%, rgba(36,31,27,0));
+    padding:18px 20px 10px;
+  }
+  .top-eyebrow{
+    font-size:11px; letter-spacing:.18em; color:var(--ink-faint);
+    text-transform:uppercase;
+  }
+  .top-title{
+    font-family:var(--serif);
+    font-size:19px; font-weight:700; color:var(--ink);
+    margin-top:4px;
+  }
+  .top-title .accent{ color:var(--rust-soft); }
+
+  /* ---------- knot / flow motif (signature element) ---------- */
+  .motif{ display:block; margin:0 auto; }
+
+  /* ---------- content area ---------- */
+  main{ flex:1; padding: 4px 20px 100px; }
+  section.panel{ display:none; animation:fade .35s ease; }
+  section.panel.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .hero{
+    text-align:center;
+    padding: 18px 6px 26px;
+  }
+  .hero h1{
+    font-family:var(--serif);
+    font-size:26px; line-height:1.5; margin:18px 0 6px;
+    font-weight:700;
+  }
+  .hero p.sub{
+    color:var(--ink-dim); font-size:13.5px; line-height:1.7; margin:0 auto;
+    max-width:340px;
+  }
+
+  .book-card{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:18px;
+  }
+  .book-card .row{ display:flex; gap:12px; }
+  .book-card .badge{
+    flex:none; width:44px; height:60px; border-radius:5px;
+    background:linear-gradient(160deg, var(--rust) 0%, #7c3c2c 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-size:12px; color:#f2e2d8; text-align:center; line-height:1.3;
+    padding:4px; flex-shrink:0;
+  }
+  .book-card h3{ margin:0 0 3px; font-size:15.5px; font-family:var(--serif); }
+  .book-card .meta{ font-size:12px; color:var(--ink-faint); line-height:1.6; }
+
+  .divider{
+    display:flex; align-items:center; gap:10px;
+    margin: 26px 0 14px;
+  }
+  .divider svg{ flex:none; }
+  .divider span{
+    font-size:12px; letter-spacing:.12em; color:var(--ink-faint); text-transform:uppercase;
+  }
+  .divider::after{
+    content:""; flex:1; height:1px; background:var(--line);
+  }
+
+  .quote-key{
+    background: var(--rust-wash);
+    border-left:3px solid var(--rust);
+    border-radius:0 10px 10px 0;
+    padding:16px 18px;
+    margin: 6px 0 22px;
+  }
+  .quote-key .label{ font-size:11px; color:var(--rust-soft); letter-spacing:.1em; margin-bottom:6px; }
+  .quote-key .text{ font-family:var(--serif); font-size:19px; line-height:1.6; color:var(--ink); }
+
+  .duo{ display:flex; flex-direction:column; gap:12px; margin-bottom:8px; }
+  .duo-card{
+    border-radius:12px; padding:16px 18px; border:1px solid var(--line);
+  }
+  .duo-card.tangle{ background:var(--rust-wash); border-color:rgba(177,92,70,0.28); }
+  .duo-card.way{ background:var(--jade-wash); border-color:rgba(140,163,140,0.28); }
+  .duo-card .tag{
+    display:inline-block; font-size:11px; padding:2px 9px; border-radius:20px;
+    margin-bottom:9px; letter-spacing:.05em;
+  }
+  .tangle .tag{ background:var(--rust); color:#2a1a14; }
+  .way .tag{ background:var(--jade); color:#1c241c; }
+  .duo-card p{ margin:0; font-size:14.5px; line-height:1.85; color:var(--ink); }
+
+  /* ---------- accordion cards ---------- */
+  .acc{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .acc-head{
+    display:flex; align-items:flex-start; gap:12px;
+    padding:16px 16px;
+    cursor:pointer;
+    -webkit-user-select:none; user-select:none;
+  }
+  .acc-num{
+    flex:none; width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-size:14px; font-weight:700;
+    background:var(--bg-card-2); color:var(--rust-soft);
+    margin-top:1px;
+  }
+  .acc.way .acc-num{ color:var(--jade-soft); }
+  .acc-head .htxt{ flex:1; }
+  .acc-head h3{ margin:0 0 3px; font-size:15.5px; font-family:var(--serif); }
+  .acc-head .one-line{ font-size:12.5px; color:var(--ink-dim); line-height:1.5; }
+  .acc-chev{
+    flex:none; width:20px; height:20px; margin-top:5px;
+    transition:transform .3s ease; color:var(--ink-faint);
+  }
+  .acc.open .acc-chev{ transform:rotate(180deg); }
+  .acc-body{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+  }
+  .acc.open .acc-body{ max-height:900px; }
+  .acc-body-inner{ padding: 0 16px 18px 58px; }
+  .acc-body-inner .blk{ margin-bottom:14px; }
+  .acc-body-inner .blk:last-child{ margin-bottom:0; }
+  .acc-body-inner .blk-label{
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--rust-soft); margin-bottom:5px;
+  }
+  .acc.way .acc-body-inner .blk-label{ color:var(--jade-soft); }
+  .acc-body-inner p{ margin:0; font-size:14px; line-height:1.85; color:var(--ink-dim); }
+  .acc-body-inner ul{ margin:0; padding-left:18px; }
+  .acc-body-inner li{ font-size:13.5px; line-height:1.85; color:var(--ink-dim); }
+  .case-box{
+    background:var(--bg-card-2); border-radius:9px; padding:12px 14px;
+    font-size:13.5px; line-height:1.8; color:var(--ink-dim); font-style:normal;
+  }
+  .case-box .who{ color:var(--rust-soft); font-size:11.5px; letter-spacing:.05em; display:block; margin-bottom:5px;}
+  .acc.way .case-box .who{ color:var(--jade-soft); }
+
+  .principle-card{
+    background: linear-gradient(160deg, var(--bg-card-2), var(--bg-card));
+    border:1px solid var(--line);
+    border-radius:14px; padding:20px 20px 22px; text-align:center; margin: 22px 0 6px;
+  }
+  .principle-card .k{ font-family:var(--serif); font-size:18px; line-height:1.6; color:var(--jade-soft); }
+  .principle-card .d{ font-size:13px; color:var(--ink-dim); margin-top:8px; line-height:1.8; }
+
+  .callout{
+    border:1px dashed var(--line); border-radius:12px; padding:14px 16px; margin: 18px 0;
+  }
+  .callout .t{ font-size:12.5px; color:var(--ink-faint); letter-spacing:.05em; margin-bottom:6px;}
+  .callout .b{ font-size:13.5px; line-height:1.8; color:var(--ink-dim); }
+  .callout b{ color:var(--ink); font-weight:600; }
+
+  /* discussion tab */
+  .q-item{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:12px;
+    padding:15px 16px; margin-bottom:12px;
+  }
+  .q-item .qn{ font-family:var(--serif); font-size:12px; color:var(--rust-soft); margin-bottom:6px; }
+  .q-item p{ margin:0; font-size:14.5px; line-height:1.75; color:var(--ink); }
+  .q-item textarea{
+    width:100%; margin-top:10px; background:var(--bg-card-2); border:1px solid var(--line);
+    border-radius:8px; color:var(--ink); font-family:var(--sans); font-size:13px;
+    padding:10px 12px; resize:vertical; min-height:44px; line-height:1.6;
+  }
+  .q-item textarea::placeholder{ color:var(--ink-faint); }
+  .q-item textarea:focus{ outline:none; border-color:var(--rust); }
+
+  footer.note{
+    text-align:center; font-size:11.5px; color:var(--ink-faint);
+    padding: 20px 30px 10px; line-height:1.7;
+  }
+
+  /* ---------- bottom tab bar ---------- */
+  nav.tabbar{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; justify-content:center;
+    z-index:30;
+  }
+  .tabbar-inner{
+    width:100%; max-width:520px;
+    display:flex;
+    background:rgba(45,39,33,0.92);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .tab-btn{
+    flex:1; background:none; border:none; color:var(--ink-faint);
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    padding:6px 2px; font-family:var(--sans); font-size:11px;
+    cursor:pointer;
+  }
+  .tab-btn svg{ width:21px; height:21px; }
+  .tab-btn.active{ color:var(--rust-soft); }
+  .tab-btn.active svg{ color:var(--rust-soft); }
+
+  :focus-visible{ outline:2px solid var(--rust-soft); outline-offset:2px; }
+
+  @media (prefers-reduced-motion: reduce){
+    section.panel, .acc-chev, .acc-body{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="top-eyebrow">读书会伴读 · Companion Notes</div>
+    <div class="top-title">中国式家庭<span class="accent">：纠缠与出路</span></div>
+  </header>
+
+  <main>
+
+    <!-- ================= 总览 ================= -->
+    <section class="panel active" id="panel-home">
+
+      <div class="hero">
+        <svg class="motif" width="120" height="46" viewBox="0 0 120 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 23c8-16 20-16 26 0s18 16 26 0 18-16 26 0 18 16 26 0"
+                stroke="#b15c46" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M8 23c8 16 20 16 26 0" stroke="#8ca38c" stroke-width="1.6" stroke-linecap="round" opacity="0"/>
+          <circle cx="112" cy="23" r="3" fill="#8ca38c"/>
+        </svg>
+        <h1>我爱你，但不喜欢你</h1>
+        <p class="sub">这是陈海贤写给这个时代中国式家庭的一句概括。爱是真的，纠缠也是真的。这份伴读，帮你在读书会开口之前，先理一理自己的思路。</p>
+      </div>
+
+      <div class="book-card">
+        <div class="row">
+          <div class="badge">中国式<br>家庭</div>
+          <div>
+            <h3>《中国式家庭：关系里的纠缠和解脱》</h3>
+            <div class="meta">
+              陈海贤 著 · 果麦文化 · 2026年出版<br>
+              浙江大学应用心理学博士、家庭治疗师、从业十余年，收录 31 个真实咨询故事
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"><span>两句话概括</span></div>
+
+      <div class="duo">
+        <div class="duo-card tangle">
+          <span class="tag">纠缠</span>
+          <p>当我们与家人有着深刻的羁绊，却缺少欣赏和认可；关系里满是割舍不开的牵绊，却少了该有的距离和空间。爱是真的，但爱里裹挟着控制、期待和评判，让彼此喘不过气。</p>
+        </div>
+        <div class="duo-card way">
+          <span class="tag">出路</span>
+          <p>不是切断关系，而是重新学习一种"有边界的爱"——不必顺从，也不必愧疚。当一个人开始向内疗愈自己，整个家庭的关系，往往会跟着悄悄松动。</p>
+        </div>
+      </div>
+
+      <div class="quote-key">
+        <div class="label">本书对"中国式家庭"的一句定义</div>
+        <div class="text">"我爱你，但不喜欢你。"</div>
+      </div>
+
+      <div class="callout">
+        <div class="t">怎么用这份伴读</div>
+        <div class="b">切到 <b>纠缠</b> 栏目，看看三种典型模式里，哪一种最像自己家；再切到 <b>出路</b> 栏目，看对应的松动方式；最后到 <b>讨论</b> 栏目，把自己的答案写下来，带去读书会分享。</div>
+      </div>
+
+    </section>
+
+    <!-- ================= 三种纠缠 ================= -->
+    <section class="panel" id="panel-tangle">
+
+      <div class="hero" style="padding-top:10px;">
+        <svg class="motif" width="72" height="40" viewBox="0 0 72 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 20c6-14 14-14 18-2s10 16 16 4 12-14 18-2" stroke="#b15c46" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <h1 style="font-size:21px;">三种典型的纠缠</h1>
+        <p class="sub">结合书中案例与读者评论，梳理出三种最常见的中国式家庭纠缠。点开每一张卡片，看具体场景和识别信号。</p>
+      </div>
+
+      <div class="acc" id="acc-t1">
+        <div class="acc-head" onclick="toggleAcc('acc-t1')">
+          <div class="acc-num">01</div>
+          <div class="htxt">
+            <h3>求认可型纠缠</h3>
+            <div class="one-line">成年后，依然在潜意识里向父母讨要一句认可或道歉</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">是什么</div>
+              <p>表面在争吵眼前的现实问题，实际上是在补偿童年里那些没被接住的情感需求。争的不是这件事本身，而是"你到底在不在乎我"。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">常见场景</div>
+              <ul>
+                <li>已经组建自己的家庭，却仍反复向父母求证"你是不是从来没爱过我"</li>
+                <li>为一句童年的话、一次没被回应的求助，耿耿于怀多年</li>
+                <li>用"翻旧账"的方式，其实是在等一句迟到的道歉</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">识别信号</div>
+              <ul>
+                <li>和父母的争执常常"小事引发大情绪"</li>
+                <li>心里有一句反复想说、却始终没说出口的话</li>
+                <li>即便对方已经道歉，心里那道坎还是没过去</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">书中案例</div>
+              <div class="case-box">
+                <span class="who">一位来访者的故事</span>
+                童年时父母离婚，她站在母亲一边，对父亲说了一句很伤人的话。这句话，成了心里一根拔不出来的刺。长大后，她一直在"找父亲"——想要一个解释、一句道歉、一份确认。咨询师问她：你一直在找父亲，那你觉得，父亲在找你吗？她愣住了。后来才明白，父亲其实也一直在找她。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc" id="acc-t2">
+        <div class="acc-head" onclick="toggleAcc('acc-t2')">
+          <div class="acc-num">02</div>
+          <div class="htxt">
+            <h3>以爱之名的控制型纠缠</h3>
+            <div class="one-line">"我对你好，你就得听我的"——牺牲式的爱，变成了负担</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">是什么</div>
+              <p>爱本身没有问题，问题出在"必须按我的方式来"。付出被悄悄换算成一种筹码——我为你牺牲了这么多，所以你要照我说的做。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">常见场景</div>
+              <ul>
+                <li>父母对成年子女的婚恋、工作、育儿方式反复插手</li>
+                <li>子女出于"担心"，坚持要老人改变多年的生活习惯</li>
+                <li>一方的"为你好"，让另一方感到窒息而不敢反驳</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">识别信号</div>
+              <ul>
+                <li>对话里频繁出现"你应该""你必须""要不是为了你"</li>
+                <li>拒绝对方的安排，会引发强烈的愧疚感</li>
+                <li>关心常常先于询问——还没问"你想不想"，就已经在安排"该怎么做"</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">书中案例</div>
+              <div class="case-box">
+                <span class="who">一位来访者的故事</span>
+                她已婚生子，家庭圆满，唯独和独居老家的父亲关系紧张。她担心父亲的安危，想接他来同住方便照顾，父亲坚持不肯，两人又一次爆发争吵。爱与担心都是真的，卡住彼此的，是"必须听我安排"这件事本身。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc" id="acc-t3">
+        <div class="acc-head" onclick="toggleAcc('acc-t3')">
+          <div class="acc-num">03</div>
+          <div class="htxt">
+            <h3>貌合神离型纠缠</h3>
+            <div class="one-line">割舍不开，又靠不近——最隐蔽、拖得最久的一种</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">是什么</div>
+              <p>没有明显的冲突事件，家人之间长期处于一种"若即若离"的状态——既无法真正靠近，也无法彻底疏远。这正是"我爱你，但不喜欢你"最贴切的写照。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">常见场景</div>
+              <ul>
+                <li>夫妻同处一室多年，情感上却像两条不再相交的平行线</li>
+                <li>组建自己的小家庭后，与原生家庭的联系只剩节日和责任</li>
+                <li>期待对方先改变，双方都在等，谁也不肯先松手</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">识别信号</div>
+              <ul>
+                <li>和家人相处时，礼貌得体，却很少有真正的情感交流</li>
+                <li>很久没有对家人说过一句真心的欣赏或肯定</li>
+                <li>提起"回家"，心情复杂，说不清是期待还是疲惫</li>
+              </ul>
+            </div>
+            <div class="blk">
+              <div class="blk-label">为什么最难察觉</div>
+              <p>因为表面上一切正常，没有争吵，没有决裂，甚至看起来很和睦。恰恰是这种"看似没问题"，让人很难意识到关系其实早已停滞。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= 出路 ================= -->
+    <section class="panel" id="panel-way">
+
+      <div class="hero" style="padding-top:10px;">
+        <svg class="motif" width="90" height="30" viewBox="0 0 90 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 22c10-16 20-16 30 0s20 16 30 0 20-16 22 0" stroke="#8ca38c" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <h1 style="font-size:21px;">对应的出路</h1>
+        <p class="sub">三种纠缠，三条具体可做的路。出路不是道理，是一个可以今天就开始的小动作。</p>
+      </div>
+
+      <div class="acc way" id="acc-w1">
+        <div class="acc-head" onclick="toggleAcc('acc-w1')">
+          <div class="acc-num">01</div>
+          <div class="htxt">
+            <h3>对应「求认可型」：自己先给自己一个解释</h3>
+            <div class="one-line">停止索要迟到的确认，转而看见双向的寻找</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">核心动作</div>
+              <p>不再等对方"先低头"，而是自己先把那句没说出口的话说出来，哪怕对方的回应不完美。很多时候，寻找是双向的，只是没被看见——先看见对方的努力，心里那根刺才可能真正松动。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">今天可以试的一小步</div>
+              <ul>
+                <li>把心里那句反复想说的话，写下来，不必立刻说出口</li>
+                <li>回想一件对方曾经默默付出、但你从未点破的事</li>
+                <li>试着问自己："如果他/她已经在用自己的方式找我，我看见了吗？"</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc way" id="acc-w2">
+        <div class="acc-head" onclick="toggleAcc('acc-w2')">
+          <div class="acc-num">02</div>
+          <div class="htxt">
+            <h3>对应「控制型」：划清边界，而不是切断关系</h3>
+            <div class="one-line">边界不是冷漠，是让爱不再压迫</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">核心动作</div>
+              <p>把"担心"和"必须按我说的做"分开。你可以关心，也可以坚持自己的决定——两者并不矛盾。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">今天可以试的一小步</div>
+              <ul>
+                <li>练习一句话："我理解你的担心，但这件事我想自己决定"</li>
+                <li>允许对方保留自己的生活方式，哪怕你并不认同</li>
+                <li>把"我是为你好"换成"我尊重你的选择，但我也有我的边界"</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc way" id="acc-w3">
+        <div class="acc-head" onclick="toggleAcc('acc-w3')">
+          <div class="acc-num">03</div>
+          <div class="htxt">
+            <h3>对应「貌合神离型」：重新学会表达欣赏</h3>
+            <div class="one-line">距离感和亲密感并不矛盾</div>
+          </div>
+          <svg class="acc-chev" viewBox="0 0 20 20" fill="none"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            <div class="blk">
+              <div class="blk-label">核心动作</div>
+              <p>不必强求立刻亲密，但可以有意识地把那些"没说出口的欣赏"补上。同时也允许彼此保留独立的心理空间——这不是关系变淡，而是关系变得可持续。</p>
+            </div>
+            <div class="blk">
+              <div class="blk-label">今天可以试的一小步</div>
+              <ul>
+                <li>说一句具体的肯定，而不是泛泛的"你辛苦了"</li>
+                <li>问一个真正好奇的问题，而不是例行公事的问候</li>
+                <li>给自己和家人都留一点"不必汇报"的私人空间</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="principle-card">
+        <div class="k">自愈，就是治愈家人</div>
+        <div class="d">不是你去改造家人，是你先把自己理顺了——当你开始疗愈内心，挣脱情感纠缠，整段家庭关系，往往会悄然回暖。</div>
+      </div>
+
+    </section>
+
+    <!-- ================= 讨论 ================= -->
+    <section class="panel" id="panel-discuss">
+
+      <div class="hero" style="padding-top:10px;">
+        <h1 style="font-size:21px;">带去读书会的问题</h1>
+        <p class="sub">读书会最珍贵的，往往不是"讲清楚了什么道理"，而是"有没有说出自己的真实经历"。这几个问题，可以先自己写一写，再带去分享。</p>
+      </div>
+
+      <div class="q-item">
+        <div class="qn">Q1</div>
+        <p>三种纠缠——求认可型、控制型、貌合神离型——你觉得自己的家庭最接近哪一种？为什么？</p>
+        <textarea placeholder="写下你的第一反应，不用组织语言……"></textarea>
+      </div>
+
+      <div class="q-item">
+        <div class="qn">Q2</div>
+        <p>有没有一句话，一直卡在你和某位家人之间，始终没有说出口？</p>
+        <textarea placeholder="可以只写关键词……"></textarea>
+      </div>
+
+      <div class="q-item">
+        <div class="qn">Q3</div>
+        <p>如果"自愈就是治愈家人"，你愿意先从哪一件很小的事开始？</p>
+        <textarea placeholder="越具体越好，比如一句话、一个电话……"></textarea>
+      </div>
+
+      <div class="q-item">
+        <div class="qn">Q4</div>
+        <p>"我爱你，但不喜欢你"——这句话，你在自己身上，还是在某位家人身上，看到了影子？</p>
+        <textarea placeholder="写给自己看就够了……"></textarea>
+      </div>
+
+      <div class="callout">
+        <div class="t">提醒</div>
+        <div class="b">这里写的内容只保存在这次打开的页面里，刷新或关闭后不会保留，适合先在心里过一遍，再带着感受去读书会现场分享。</div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="note">内容整理自《中国式家庭：关系里的纠缠和解脱》公开简介与读者书评，用于读书会内部讨论参考。</footer>
+
+  <nav class="tabbar">
+    <div class="tabbar-inner">
+      <button class="tab-btn active" data-panel="panel-home" onclick="switchTab('panel-home', this)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 5l8 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        总览
+      </button>
+      <button class="tab-btn" data-panel="panel-tangle" onclick="switchTab('panel-tangle', this)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 12c3-7 8-7 10-1s7 6 10-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        纠缠
+      </button>
+      <button class="tab-btn" data-panel="panel-way" onclick="switchTab('panel-way', this)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 15c4-8 8-8 8 0s4 8 8 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        出路
+      </button>
+      <button class="tab-btn" data-panel="panel-discuss" onclick="switchTab('panel-discuss', this)">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H10l-4 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        讨论
+      </button>
+    </div>
+  </nav>
+
+</div>
+
+<script>
+  function switchTab(panelId, btn){
+    document.querySelectorAll('section.panel').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById(panelId).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelector('main').scrollTo(0,0);
+    window.scrollTo(0,0);
+  }
+  function toggleAcc(id){
+    var el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
